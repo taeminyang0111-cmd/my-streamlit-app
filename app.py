@@ -3,26 +3,25 @@ import requests
 
 st.set_page_config(page_title="나와 어울리는 영화는?", page_icon="🎬")
 
-# ======================
-# 사이드바 - API Key 입력
-# ======================
-st.sidebar.title("🔑 TMDB 설정")
+# ============================
+# TMDB API Key 입력
+# ============================
+st.sidebar.title("🎟️ TMDB 설정")
 api_key = st.sidebar.text_input("TMDB API Key 입력", type="password")
 
-# ======================
-# 제목 & 소개
-# ======================
+# ============================
+# UI 타이틀 & 설명
+# ============================
 st.title("🎬 나와 어울리는 영화는?")
 st.write(
-    "5가지 질문을 통해 **당신의 영화 취향**을 분석하고,\n"
-    "취향에 꼭 맞는 영화를 추천해드립니다 🍿"
+    "영화 취향 테스트로 당신의 성향을 분석하고,\n"
+    "TMDB 데이터를 기반으로 인기 영화를 추천합니다 🍿"
 )
-
 st.divider()
 
-# ======================
-# 장르 및 점수 구조
-# ======================
+# ============================
+# 장르 & 점수 설정
+# ============================
 genres = {
     "로맨스/드라마": {"id": [18, 10749], "score": 0},
     "액션/어드벤처": {"id": [28], "score": 0},
@@ -30,9 +29,6 @@ genres = {
     "코미디": {"id": [35], "score": 0},
 }
 
-# ======================
-# 질문
-# ======================
 questions = [
     (
         "Q1. 시험이 끝난 금요일 밤, 가장 끌리는 계획은?",
@@ -82,78 +78,66 @@ questions = [
 ]
 
 answers = []
-
-for q, options in questions:
-    choice = st.radio(
-        q,
-        [opt[0] for opt in options],
-        index=None,
-    )
-    answers.append((choice, options))
+for q, opts in questions:
+    choice = st.radio(q, [o[0] for o in opts])
+    answers.append((choice, opts))
 
 st.divider()
 
-# ======================
+# ============================
 # 결과 버튼
-# ======================
-if st.button("🎥 결과 보기"):
+# ============================
+if st.button("📊 결과 보기"):
     if not api_key:
-        st.error("TMDB API Key를 사이드바에 입력해주세요.")
-    elif any(a[0] is None for a in answers):
-        st.warning("모든 질문에 답변해주세요!")
+        st.error("사이드바에서 TMDB API Key를 입력해주세요.")
     else:
-        # 점수 계산
-        for answer, options in answers:
-            for text, genre in options:
-                if answer == text:
+        # 점수 합계
+        for chosen, opts in answers:
+            for text, genre in opts:
+                if chosen == text:
                     genres[genre]["score"] += 1
 
-        # 최고 점수 장르 선택
-        best_genre = max(genres, key=lambda g: genres[g]["score"])
-        genre_ids = genres[best_genre]["id"]
+        best = max(genres, key=lambda g: genres[g]["score"])
+        genre_ids = genres[best]["id"]
 
-        st.subheader(f"🎯 당신의 영화 취향: {best_genre}")
-        st.write("당신의 답변을 바탕으로 아래 영화를 추천했어요!")
+        st.subheader(f"🎯 당신의 성향 결과: **{best}**")
+        st.write("아래는 해당 장르의 **인기 영화 추천 TOP 5**예요!")
 
-        # ======================
-        # TMDB API 호출
-        # ======================
-        genre_query = ",".join(map(str, genre_ids))
-        url = (
+        # Discover API: 장르 필터 + 인기순 정렬
+        id_param = ",".join(map(str, genre_ids))
+        discover_url = (
             f"https://api.themoviedb.org/3/discover/movie"
-            f"?api_key={api_key}&with_genres={genre_query}&language=ko-KR"
+            f"?api_key={api_key}"
+            f"&with_genres={id_param}"
+            f"&sort_by=popularity.desc"
+            f"&language=ko-KR"
         )
+        res = requests.get(discover_url)
+        movies = res.json().get("results", [])[:5]
 
-        response = requests.get(url)
-        data = response.json()
-        movies = data.get("results", [])[:5]
-
-        # ======================
-        # 영화 출력
-        # ======================
-        for movie in movies:
+        # 영화 리스트 출력
+        for m in movies:
             st.divider()
             cols = st.columns([1, 2])
 
             with cols[0]:
-                if movie.get("poster_path"):
+                if m.get("poster_path"):
                     st.image(
-                        "https://image.tmdb.org/t/p/w500" + movie["poster_path"],
+                        "https://image.tmdb.org/t/p/w500" + m["poster_path"],
                         use_container_width=True,
                     )
-
             with cols[1]:
-                st.markdown(f"### 🎬 {movie['title']}")
-                st.write(f"⭐ 평점: {movie['vote_average']}")
-                st.write(movie["overview"] or "줄거리 정보가 없습니다.")
-                st.info(
-                    f"💡 이 영화를 추천하는 이유:\n"
-                    f"{best_genre} 성향의 분위기와 잘 어울리는 인기 작품이에요."
+                st.markdown(f"### 🎬 {m['title']}")
+                st.write(f"⭐ 평점: {m['vote_average']}  |  💬 장르 성향: {best}")
+                st.write(m["overview"] or "줄거리 정보 없음")
+                st.success(
+                    f"👉 이 영화는 {best} 취향과 잘 맞으며, "
+                    "시청자 평점 및 인기 순위가 높은 작품이에요!"
                 )
 
 
-
             
+
 
 
 
