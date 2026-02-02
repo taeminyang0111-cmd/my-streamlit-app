@@ -1,25 +1,86 @@
 import streamlit as st
-import requests
 
-st.title("🎬 TMDB API 테스트")
+st.set_page_config(page_title="나와 어울리는 영화는?", page_icon="🎬")
 
-# 사이드바에서 API 키 입력
-TMDB_API_KEY = st.sidebar.text_input("TMDB API Key", type="password")
+# 제목
+st.title("🎬 나와 어울리는 영화는?")
 
-if TMDB_API_KEY:
-    if st.button("인기 영화 가져오기"):
-        # TMDB에서 인기 영화 가져오기
-        url = f"https://api.themoviedb.org/3/movie/popular?api_key={TMDB_API_KEY}&language=ko-KR"
-        response = requests.get(url)
-        data = response.json()
-        
-        # 첫 번째 영화 정보 출력
-        movie = data['results'][0]
-        st.write(f"🎬 제목: {movie['title']}")
-        st.write(f"⭐ 평점: {movie['vote_average']}/10")
-        st.write(f"📅 개봉일: {movie['release_date']}")
-        st.write(f"📝 줄거리: {movie['overview'][:100]}...")
-else:
-    st.info("사이드바에 TMDB API Key를 입력해주세요.")
+# 소개 문구
+st.write(
+    "간단한 심리테스트를 통해 **당신의 성향과 잘 어울리는 영화 장르**를 알아보세요! 🎥🍿\n"
+    "편하게 생각하고 가장 끌리는 선택지를 골라주세요."
+)
+
+st.divider()
+
+# 질문 1
+q1 = st.radio(
+    "Q1. 시험이 끝난 금요일 밤, 가장 끌리는 계획은?",
+    [
+        "조용한 카페나 방에서 감정선 깊은 영화 한 편",
+        "팝콘 들고 화끈한 액션 영화 보면서 스트레스 풀기",
+        "현실을 잠시 잊게 해줄 새로운 세계관의 영화 몰아보기",
+        "친구들이랑 웃다가 배 아픈 코미디 영화 보기",
+    ],
+    index=None,
+)
+
+# 질문 2
+q2 = st.radio(
+    "Q2. 영화 속 주인공에게 가장 끌리는 타입은?",
+    [
+        "감정 변화가 섬세하고 관계에 진심인 인물",
+        "위기 상황에서도 몸부터 움직이는 행동파",
+        "특별한 능력이나 비범한 운명을 가진 존재",
+        "어딘가 허술한데 묘하게 정이 가는 캐릭터",
+    ],
+    index=None,
+)
+
+# 질문 3
+q3 = st.radio(
+    "Q3. 너의 일상에 가장 필요한 영화의 역할은?",
+    [
+        "마음을 건드려서 생각할 거리를 주는 것",
+        "지루한 일상에 아드레날린을 넣어주는 것",
+        "상상력을 자극하고 새로운 시각을 주는 것",
+        "아무 생각 없이 웃고 기분 좋아지게 하는 것",
+    ],
+    index=None,
+)
+
+# 질문 4
+q4 = st.radio(
+    "Q4. 영화가 끝났을 때 가장 좋은 여운은?",
+    [
+        "한동안 장면과 대사가 머릿속에서 맴도는 느낌",
+        "“와… 이 장면 미쳤다” 하면서 바로 다시 보고 싶어지는 느낌",
+        "세계관 설정을 찾아보고 싶어지는 궁금증",
+        "명장면이 밈처럼 계속 떠올라 웃음이 나는 상태",
+    ],
+    index=None,
+)
+
+# 질문 5
+q5 = st.radio(
+    "Q5. 친구가 “이 영화 꼭 봐”라고 추천했을 때, 네가 가장 혹하는 말은?",
+    [
+        "스토리가 진짜 현실적이고 감정선이 미쳤어",
+        "액션이 장난 아니고 전개가 숨 돌릴 틈이 없어",
+        "설정이 완전 새롭고 상상력이 터져",
+        "진짜 아무 생각 없이 웃다가 끝나",
+    ],
+    index=None,
+)
+
+st.divider()
+
+# 결과 보기 버튼
+if st.button("🎥 결과 보기"):
+    st.subheader("분석 중... ⏳")
+    st.write("당신의 선택을 바탕으로 영화 성향을 분석하고 있어요!")
+
+
             
+
 
